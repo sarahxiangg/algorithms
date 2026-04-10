@@ -218,16 +218,76 @@ def ucs(filename):
     print_failure('UCS', expanded_order)    
 
 
+
 def greedy(filename):
     data = parse_map(filename)
+    start = Node(data['start'])
 
+    heap = []
+    counter = 0
+    h = heuristic(start.state, data)
+    heapq.heappush(heap, (h, start.state[0], start.state[1], counter, start))
+
+    expanded_set = set()
     expanded_order = []
 
-    pass
+    while heap:
+        _, _, _, _, node = heapq.heappop(heap)
 
+        if node.state in expanded_set:
+            continue
+
+        expanded_set.add(node.state)
+        expanded_order.append(node.state)
+
+        if is_goal(node.state, data):
+            print_success('Greedy', expanded_order, node)
+            return
+
+        for child in get_children(node, data):
+            counter += 1
+            h = heuristic(child.state, data)
+            heapq.heappush(
+                heap,
+                (h, child.state[0], child.state[1], counter, child)
+            )
+
+    print_failure('Greedy', expanded_order)
 
 def astar(filename):
-    pass
+    data = parse_map(filename)
+    start = Node(data['start'])
+
+    heap = []
+    counter = 0
+    h = heuristic(start.state, data)
+
+    heapq.heappush(heap,(h, start.state[0], start.state[1], counter, start))
+
+    expanded_set = set()
+    expanded_order = []
+
+    while heap:
+        _,_,_,_, node = heapq.heappop(heap)
+
+        if node.state in expanded_set:
+            continue
+        
+        expanded_set.add(node.state)
+        expanded_order.append(node.state)
+
+        if is_goal(node.state,data):
+            print_success('A*', expanded_order, node)
+            return
+        
+        for child in get_children(node,data):
+            counter+= 1
+            h = heuristic(child.state, data)
+            f = h + child.g
+            heapq.heappush(heap, (f, child.state[0], child.state[1], counter, child))
+    print_failure('A*', expanded_order)
+
+
 
 def ids(filename, limit):
     data = parse_map(filename)
